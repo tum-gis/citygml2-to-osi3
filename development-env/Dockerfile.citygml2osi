@@ -1,0 +1,54 @@
+FROM python:3.9
+
+ARG GITLAB_CI_TOKEN
+
+RUN apt-get update -y && apt-get upgrade -y && apt-get autoremove -y
+RUN apt-get install -y git && apt-get install -y cmake && apt-get install -y libprotobuf-dev protobuf-compiler && pip install setuptools && apt-get install -y libgeos-dev
+
+# ======================= #
+# install osi validation & corresponding submodules, i. e. osi
+# ======================= #
+
+WORKDIR /usr/src/
+RUN git clone https://github.com/OpenSimulationInterface/osi-validation.git
+WORKDIR /usr/src/osi-validation
+RUN git submodule update --init
+WORKDIR /usr/src/osi-validation/open-simulation-interface
+RUN pip install .
+WORKDIR /usr/src/osi-validation
+RUN python setup.py install # RUN pip install . 
+RUN pip install pyinstaller && pyinstaller osivalidator/osi_general_validator.py --onefile
+
+
+# ======================= #
+# install osi visualizer & corresponding submodules, unfortunately osi again
+# ======================= #
+
+WORKDIR /usr/src/
+RUN git clone https://github.com/OpenSimulationInterface/osi-visualizer.git
+WORKDIR /usr/src/osi-visualizer
+# might be an security issue as docker is root per default and sudo is not necessary but required for the bash files
+RUN apt-get -y install sudo
+# check if submodule really have to be installed here
+RUN git submodule update --init && mkdir build && bash install-deps.sh && bash build-install-build-deps.sh 
+# RUN mkdir build && bash install-deps.sh && bash build-install-build-deps.sh 
+
+# install dependencies
+WORKDIR /usr/src/osi-visualizer/build
+RUN cmake .. && make -j8
+# ./osi-visualizer
+
+
+### install only osi repoo
+#RUN git clone https://github.com/OpenSimulationInterface/open-simulation-interface.git
+#WORKDIR /usr/src/open-simulation-interface/
+#RUN pip install .
+
+# ======================= #
+# install developement requirements
+# ======================= #
+
+WORKDIR /usr/src/
+RUN git clone https://gitlab-ci-token:$GITLAB_CI_TOKEN@gitlab.lrz.de/applied-geoinformatics-2/citygml2osi.git
+WORKDIR /usr/src/citygml2osi
+RUN pip install --no-cache-dir -r requirements.txt

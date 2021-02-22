@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+
+  3DCityDB:
+    container_name: 3DCityDB
+    hostname: 3dcitydb
+    image: tumgis/3dcitydb-postgis
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      #- ./DB-Backup/:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=changeMe!
+      - SRID=32632
+      - SRSNAME=urn:ogc:def:crs:EPSG::32632
+
+  citygml2osi:
+    container_name: citygml2osi
+    hostname: citygml2osi
+    build:
+      context: ./ 
+      dockerfile: ./Dockerfile.citygml2osi
+      args:
+        - GITLAB_CI_TOKEN=TnxWy4sQFPURBBkhrhEF
+    environment:
+      - DATABASE_HOST=3dcitydb
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=changeMe!
+    volumes:
+      - citygml2osi_data:/usr/src/citygml2osi
+    command: tail -F anything
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=postgre@example.com
+      - PGADMIN_DEFAULT_PASSWORD=secret
+      - PGADMIN_LISTEN_PORT=80
+    links:
+      - "3DCityDB:pgsql-server"
+    ports:
+      - 8080:80
+
+volumes:
+  pgdata:
+  citygml2osi_data:
