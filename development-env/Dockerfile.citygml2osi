@@ -1,7 +1,5 @@
 FROM python:3.9
 
-ARG GITLAB_CI_TOKEN
-
 RUN apt-get update -y && apt-get upgrade -y && apt-get autoremove -y
 RUN apt-get install -y git && apt-get install -y cmake && apt-get install -y libprotobuf-dev protobuf-compiler && pip install setuptools && apt-get install -y libgeos-dev
 
@@ -48,7 +46,7 @@ RUN cmake .. && make -j8
 # install developement requirements
 # ======================= #
 
-WORKDIR /usr/src/
-RUN git clone https://gitlab-ci-token:$GITLAB_CI_TOKEN@gitlab.lrz.de/applied-geoinformatics-2/citygml2osi.git
+COPY ../citygml2osi /usr/src/citygml2osi
+
 WORKDIR /usr/src/citygml2osi
 RUN pip install --no-cache-dir -r requirements.txt
