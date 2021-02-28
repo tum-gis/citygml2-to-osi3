@@ -20,8 +20,8 @@ services:
     container_name: citygml2osi
     hostname: citygml2osi
     build:
-      context: ./ 
-      dockerfile: ./Dockerfile.citygml2osi
+      context: ../ 
+      dockerfile: ./development-env/Dockerfile.citygml2osi
     environment:
       - DATABASE_HOST=3dcitydb
       - DATABASE_PORT=5432

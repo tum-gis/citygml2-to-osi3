@@ -46,7 +46,7 @@ RUN cmake .. && make -j8
 # install developement requirements
 # ======================= #
 
-COPY ../citygml2osi /usr/src/citygml2osi
+COPY ./citygml2osi /usr/src/citygml2osi
 
 WORKDIR /usr/src/citygml2osi
 RUN pip install --no-cache-dir -r requirements.txt
